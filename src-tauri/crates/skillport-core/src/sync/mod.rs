@@ -15,11 +15,11 @@ use std::path::{Path, PathBuf};
 
 use rusqlite::Connection;
 
-use crate::core::error::{AppError, AppResult};
-use crate::core::model::*;
-use crate::core::paths::{self, AppPaths};
-use crate::core::util::{new_id, now_iso};
-use crate::core::{fsops, hash, repo, settings};
+use crate::error::{AppError, AppResult};
+use crate::model::*;
+use crate::paths::{self, AppPaths};
+use crate::util::{new_id, now_iso};
+use crate::{fsops, hash, repo, settings};
 
 use inspect::inspect_target;
 

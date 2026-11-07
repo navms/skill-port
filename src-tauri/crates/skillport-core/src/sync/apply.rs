@@ -5,15 +5,15 @@ use std::sync::atomic::{AtomicBool, Ordering};
 
 use rusqlite::Connection;
 
-use crate::core::error::{AppError, AppResult};
-use crate::core::model::{
+use crate::error::{AppError, AppResult};
+use crate::model::{
     ActualKind, LinkMode, PlanAction, Skill, SyncPlan, SyncProgress, SyncProgressStatus,
     SyncResult, SyncResultItem, Target,
 };
-use crate::core::paths::{self, AppPaths};
-use crate::core::undo::SyncChange;
-use crate::core::util::{new_id, now_iso};
-use crate::core::{fsops, hash, logging, repo, settings, undo};
+use crate::paths::{self, AppPaths};
+use crate::undo::SyncChange;
+use crate::util::{new_id, now_iso};
+use crate::{fsops, hash, logging, repo, settings, undo};
 
 /// 目标路径上已有的条目归属。
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -125,14 +125,13 @@ pub fn apply_plan(
     })
 }
 
-fn recreate_symlink(previous: Option<&crate::core::model::Install>) -> bool {
+fn recreate_symlink(previous: Option<&crate::model::Install>) -> bool {
     match previous {
         Some(install) => {
             install.actual_kind == Some(ActualKind::Symlink)
                 && matches!(
                     install.status,
-                    crate::core::model::InstallStatus::Ok
-                        | crate::core::model::InstallStatus::Stale
+                    crate::model::InstallStatus::Ok | crate::model::InstallStatus::Stale
                 )
         }
         None => false,

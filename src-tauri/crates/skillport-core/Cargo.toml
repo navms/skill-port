@@ -1,0 +1,22 @@
+[package]
+name = "skillport-core"
+version = "0.2.0"
+description = "SkillPort 业务核心：与 Tauri 无关，桌面端与 CLI 共用"
+edition = "2021"
+rust-version = "1.80"
+publish = false
+
+[lib]
+name = "skillport_core"
+
+[dependencies]
+blake3 = "1"
+rusqlite = { version = "0.40", features = ["bundled"] }
+rusqlite_migration = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+serde_yaml_ng = "0.10"
+thiserror = "2"
+time = { version = "0.3", features = ["formatting"] }
+ulid = "1"
+walkdir = "2"

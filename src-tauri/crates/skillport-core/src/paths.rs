@@ -64,6 +64,62 @@ pub fn env_data_dir() -> Option<PathBuf> {
         .map(PathBuf::from)
 }
 
+/// Tauri bundle identifier，同时也是应用数据目录名。
+/// 与 `src-tauri/tauri.conf.json` 的 `identifier` 保持一致。
+pub const APP_IDENTIFIER: &str = "com.skillport.desktop";
+
+/// 平台默认应用数据目录，与 Tauri `app_data_dir()` 的解析结果一致。
+///
+/// CLI 没有 Tauri 上下文，用它找到桌面端正在使用的同一个目录；
+/// `SKILLPORT_DATA_DIR` 或 `--data-dir` 的优先级由调用方处理。
+pub fn default_data_dir() -> AppResult<PathBuf> {
+    Ok(platform_data_root()?.join(APP_IDENTIFIER))
+}
+
+#[cfg(target_os = "macos")]
+fn platform_data_root() -> AppResult<PathBuf> {
+    Ok(home_dir()?.join("Library").join("Application Support"))
+}
+
+#[cfg(windows)]
+fn platform_data_root() -> AppResult<PathBuf> {
+    // Tauri 在 Windows 上使用 `dirs::data_dir()`，即 Roaming AppData。
+    if let Some(appdata) = non_empty_env("APPDATA") {
+        return Ok(PathBuf::from(appdata));
+    }
+    Ok(home_dir()?.join("AppData").join("Roaming"))
+}
+
+#[cfg(all(unix, not(target_os = "macos")))]
+fn platform_data_root() -> AppResult<PathBuf> {
+    if let Some(xdg) = non_empty_env("XDG_DATA_HOME") {
+        return Ok(PathBuf::from(xdg));
+    }
+    Ok(home_dir()?.join(".local").join("share"))
+}
+
+#[cfg(not(any(unix, windows)))]
+fn platform_data_root() -> AppResult<PathBuf> {
+    Err(AppError::InvalidInput(
+        "无法确定应用数据目录，请设置 SKILLPORT_DATA_DIR 或使用 --data-dir".to_string(),
+    ))
+}
+
+fn home_dir() -> AppResult<PathBuf> {
+    non_empty_env("HOME")
+        .or_else(|| non_empty_env("USERPROFILE"))
+        .map(PathBuf::from)
+        .ok_or_else(|| {
+            AppError::InvalidInput(
+                "无法确定应用数据目录，请设置 SKILLPORT_DATA_DIR 或使用 --data-dir".to_string(),
+            )
+        })
+}
+
+fn non_empty_env(name: &str) -> Option<std::ffi::OsString> {
+    std::env::var_os(name).filter(|value| !value.is_empty())
+}
+
 /// 校验 slug：`^[a-z0-9]+(-[a-z0-9]+)*$`，2–63 字符，拒绝保留名。
 pub fn validate_slug(slug: &str) -> AppResult<()> {
     if slug.len() < MIN_SLUG_LEN || slug.len() > MAX_SLUG_LEN {
@@ -269,4 +325,19 @@ pub fn ensure_write_allowed(skills_dir: &Path, target_path: &Path, slug: &str) -
         )));
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn default_data_dir_is_absolute_and_uses_identifier() {
+        let dir = default_data_dir().expect("HOME / APPDATA 通常存在");
+        assert!(dir.is_absolute(), "{}", dir.display());
+        assert_eq!(
+            dir.file_name().and_then(|name| name.to_str()),
+            Some(APP_IDENTIFIER)
+        );
+    }
 }

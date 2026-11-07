@@ -2,8 +2,8 @@
 
 use std::path::Path;
 
-use crate::core::model::{ActualKind, InstallStatus};
-use crate::core::{fsops, paths};
+use crate::model::{ActualKind, InstallStatus};
+use crate::{fsops, paths};
 
 /// 一次核对的实测结果。
 #[derive(Debug, Clone)]

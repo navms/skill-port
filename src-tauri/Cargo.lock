@@ -2997,7 +2997,31 @@ checksum = "33f4fe9184a62d842c9ef383018f3306d8ba224fd9d836f56d7288308847c256"
 
 [[package]]
 name = "skillport"
-version = "0.1.0"
+version = "0.2.0"
+dependencies = [
+ "rusqlite",
+ "serde",
+ "serde_json",
+ "serde_yaml_ng",
+ "skillport-core",
+ "tauri",
+ "tauri-build",
+ "tauri-plugin-dialog",
+ "tempfile",
+]
+
+[[package]]
+name = "skillport-cli"
+version = "0.2.0"
+dependencies = [
+ "serde_json",
+ "skillport-core",
+ "tempfile",
+]
+
+[[package]]
+name = "skillport-core"
+version = "0.2.0"
 dependencies = [
  "blake3",
  "rusqlite",
@@ -3005,10 +3029,6 @@ dependencies = [
  "serde",
  "serde_json",
  "serde_yaml_ng",
- "tauri",
- "tauri-build",
- "tauri-plugin-dialog",
- "tempfile",
  "thiserror 2.0.21",
  "time",
  "ulid",

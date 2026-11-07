@@ -18,6 +18,7 @@
 - **状态可见**：每个技能 × 每个目标的状态（正常 / 副本过期 / 缺失 / 冲突 / 错误 / 未启用）一眼可见。
 - **冲突不静默处理**：目标目录已存在同名但不是本工具创建的目录时，标为冲突，交由用户决定，绝不自动覆盖或删除。
 - **导入严格校验**：缺 `SKILL.md`、frontmatter、`name` 或 `description` 的技能拒绝导入，并报告路径与缺失字段；不写库、不建链接。
+- **CLI 导入**：`skillport-cli import` 让其他 agent 不打开界面也能把技能收进同一个库，输出 JSON，见 §11.1。
 - **本地优先**：无账号、无云同步、无遥测；数据是本机 SQLite + 文件目录。
 - **macOS 与 Windows** 同等级支持；Linux 尽力而为，不作为发布门槛。
 
@@ -98,6 +99,9 @@ UI 文案与内部状态的映射必须集中在一处（`src/lib/status.ts`）�
 
 不在前端引入数据库驱动，不在 Rust 侧实现 UI 文案。
 
+`src-tauri` 是 Cargo workspace 根：桌面应用、`crates/skillport-core`（业务核心，**不得依赖 Tauri**）与
+`crates/skillport-cli`（CLI，见 §11.1）三个包。核心只被桌面端与 CLI 消费，任何一端都不复制业务逻辑。
+
 ## 6. 目录结构
 
 ```
@@ -115,28 +119,31 @@ skill-port/
 │  ├─ lib/                    # api.ts、types.ts、status.ts、format.ts
 │  ├─ i18n/                   # zh-CN.ts（默认）、en.ts
 │  └─ styles/                 # tokens.css、globals.css
-├─ src-tauri/
+├─ src-tauri/                 # Cargo workspace 根
 │  ├─ src/
-│  │  ├─ lib.rs               # builder、数据目录解析、command 注册
+│  │  ├─ lib.rs               # builder、数据目录解析、command 注册；`pub use skillport_core as core`
 │  │  ├─ state.rs             # AppState：Mutex<Connection> + AppPaths + PlanStore
 │  │  ├─ commands/            # 薄封装：参数校验 + spawn_blocking + 事件
-│  │  │  ├─ library.rs / targets.rs / sync.rs / settings.rs
-│  │  └─ core/
-│  │     ├─ model.rs          # Skill / Target / Install / Plan 等 IPC 类型
-│  │     ├─ error.rs          # AppError -> { code, message, detail }
-│  │     ├─ paths.rs          # app dir、slug 规则、路径守卫
-│  │     ├─ db.rs             # 连接、PRAGMA、只追加迁移
-│  │     ├─ repo.rs           # skills / targets / installs / activity / settings 查询
-│  │     ├─ frontmatter.rs    # SKILL.md 严格解析与重写
-│  │     ├─ hash.rs           # 稳定树 hash（排除 sidecar 与系统垃圾）
-│  │     ├─ fsops.rs          # 受控链接、拷贝、sidecar、备份、临时目录清理
-│  │     ├─ library.rs        # 导入、列表、编辑、删除
-│  │     ├─ target.rs         # 目标 CRUD、候选目录检测
-│  │     ├─ logging.rs        # 文件日志（5 MB 轮转，不记技能正文）
-│  │     ├─ plan.rs           # 同步计划存储（TTL 5 分钟 + 取消标记）
-│  │     ├─ settings.rs       # 设置读写与校验（默认模式 / 备份保留数）
-│  │     ├─ undo.rs           # 撤销记录：删除技能、同步操作（基于备份恢复）
-│  │     └─ sync/             # inspect / planner / apply / owned-delete / reconcile
+│  │  │  └─ library.rs / targets.rs / sync.rs / settings.rs
+│  ├─ crates/
+│  │  ├─ skillport-core/      # 业务核心（独立 crate，无 Tauri 依赖），桌面端与 CLI 共用
+│  │  │  ├─ model.rs          # Skill / Target / Install / Plan 等 IPC 类型
+│  │  │  ├─ error.rs          # AppError -> { code, message, detail }
+│  │  │  ├─ paths.rs          # app dir、平台默认数据目录、slug 规则、路径守卫
+│  │  │  ├─ workspace.rs      # 打开数据目录：布局、DB、摆放校验、临时残留清理
+│  │  │  ├─ db.rs             # 连接、PRAGMA、只追加迁移
+│  │  │  ├─ repo.rs           # skills / targets / installs / activity / settings 查询
+│  │  │  ├─ frontmatter.rs    # SKILL.md 严格解析与重写
+│  │  │  ├─ hash.rs           # 稳定树 hash（排除 sidecar 与系统垃圾）
+│  │  │  ├─ fsops.rs          # 受控链接、拷贝、sidecar、备份、临时目录清理
+│  │  │  ├─ library.rs        # 导入、列表、编辑、删除
+│  │  │  ├─ target.rs         # 目标 CRUD、候选目录检测
+│  │  │  ├─ logging.rs        # 文件日志（5 MB 轮转，不记技能正文）
+│  │  │  ├─ plan.rs           # 同步计划存储（TTL 5 分钟 + 取消标记）
+│  │  │  ├─ settings.rs       # 设置读写与校验（默认模式 / 备份保留数）
+│  │  │  ├─ undo.rs           # 撤销记录：删除技能、同步操作（基于备份恢复）
+│  │  │  └─ sync/             # inspect / planner / apply / owned-delete / reconcile
+│  │  └─ skillport-cli/       # CLI（二进制 `skillport-cli`），供其他 agent 调用，见 §11.1
 │  ├─ tests/                  # 集成测试（临时目录，覆盖路径守卫/导入/状态机/同步/冲突/撤销）
 │  ├─ placeholder-dist/       # 历史占位，不参与构建
 │  ├─ capabilities/default.json
@@ -390,7 +397,7 @@ slug 规则：`^[a-z0-9]+(-[a-z0-9]+)*$`，长度 2–63；保留名 `.`、`..`�
 ## 11. Rust 约定
 
 - edition 2021+；`cargo fmt`、`cargo clippy -- -D warnings` 必须通过。
-- 命令层只做参数校验和类型转换；业务逻辑在 `core/`，便于单元测试。
+- 命令层只做参数校验和类型转换；业务逻辑在 `crates/skillport-core`，便于单元测试，CLI 也复用它。
 - 错误统一 `AppError`（`thiserror`），序列化为 `{ code, message, detail? }`；前端按 `code` 分支，不匹配 message 文本。
 - 不使用 `unwrap()` / `expect()` 处理用户输入、路径、IO；测试代码除外。
 - 所有文件操作显式处理 Windows / Unix 分支，`#[cfg(windows)]` 隔离平台代码。
@@ -438,6 +445,35 @@ settings_get() / settings_set(patch)  -> AppSettings { defaultLinkMode, libraryP
 - 事件：`sync://progress`（`{ planId, completed, total, actionId, status }`）、
   `sync://finished`、`library://changed`、`reconcile://finished`（携带 `ReconcileReport`）。
 
+### 11.1 CLI（`skillport-cli`，供其他 agent 调用）
+
+入口在 `src-tauri/crates/skillport-cli`，只依赖 `skillport-core`，不链接 Tauri，也不需要先构建前端。
+它与桌面端读写同一个数据目录，导入走同一套严格校验、slug 冲突判定与路径守卫。
+
+```bash
+skillport-cli import <PATH>... [--data-dir <DIR>] [--json]
+```
+
+- `<PATH>` 是技能目录：目录本身含 `SKILL.md` 就导入它，否则导入其下所有含 `SKILL.md` 的直接子目录。
+- 数据目录优先级：`--data-dir` > `$SKILLPORT_DATA_DIR` > 平台默认。平台默认按 Tauri `app_data_dir()` 的规则解析
+  （macOS `~/Library/Application Support/com.skillport.desktop`、Windows `%APPDATA%\com.skillport.desktop`、
+  Linux `$XDG_DATA_HOME` 或 `~/.local/share` 下的同名目录），标识符常量在 `skillport_core::paths::APP_IDENTIFIER`。
+- `--json` 输出稳定结构：`{ schema, ok, dataDir, libraryDir, imported, skipped, items[] }`，
+  `items[].errorCode` 沿用 §8.1 的错误码；致命错误输出 `{ schema, ok: false, error: { code, message, detail } }`。
+- 退出码：`0` 全部成功；`1` 有路径被拒绝（校验失败 / slug 冲突）；`2` 参数错误、数据目录或数据库打不开。
+- 导入只写库与 DB，不创建分发；分发仍由桌面端的同步流程负责（应用启动或手动刷新时会核对）。
+- 不新增依赖：参数解析是手写的，不为单个子命令引入 clap。
+
+构建与安装：
+
+```bash
+cargo build --release -p skillport-cli --manifest-path src-tauri/Cargo.toml
+cargo install --path src-tauri/crates/skillport-cli
+```
+
+发布时（§15）由 release workflow 产出 macOS Universal `tar.gz` 与 Windows x86_64 `zip`，
+不需要另起构建任务。
+
 ## 12. 测试与验收
 
 ### 单元测试（Rust，必须）
@@ -450,6 +486,8 @@ settings_get() / settings_set(patch)  -> AppSettings { defaultLinkMode, libraryP
 - 冲突处理：接管目录 / 接管外部链接 / 忽略 / 取消忽略 / 取消 Install；外部内容不被删除。
 - 撤销：删除技能后恢复库与 Install；同步创建的链接被移除；被替换的副本从备份恢复。
 - Windows 分支：symlink 无权限 → 提示原因 → 用户确认 copy / 拒绝不操作；不自动 junction（CI 跑 Windows）。
+- CLI 端到端（`src-tauri/crates/skillport-cli/tests/import.rs`）：启动真实二进制，用临时数据目录验证成功导入、
+  严格校验拒绝（退出码 1、JSON `errorCode`）、父目录批量导入与参数错误（退出码 2）。
 
 ### 前端测试
 
@@ -486,8 +524,10 @@ pnpm typecheck
 pnpm lint
 pnpm test
 pnpm tauri build         # 产出安装包
-cargo test  --manifest-path src-tauri/Cargo.toml
-cargo clippy --manifest-path src-tauri/Cargo.toml -- -D warnings
+cargo test   --manifest-path src-tauri/Cargo.toml --workspace
+cargo clippy --manifest-path src-tauri/Cargo.toml --workspace --all-targets -- -D warnings
+cargo fmt    --manifest-path src-tauri/Cargo.toml --all --check
+cargo build  -p skillport-cli --manifest-path src-tauri/Cargo.toml   # CLI 二进制
 ```
 
 环境：Node ≥ 22、pnpm ≥ 10、Rust stable ≥ 1.80、Xcode CLT（macOS）、WebView2 Runtime（Windows 11 自带；Windows 10 可能需要 bootstrapper，Tauri 打包时会处理）。
@@ -497,6 +537,13 @@ cargo clippy --manifest-path src-tauri/Cargo.toml -- -D warnings
 >
 > ```bash
 > SKILLPORT_DATA_DIR="$(mktemp -d)/skillport" cargo run --manifest-path src-tauri/Cargo.toml
+> ```
+>
+> CLI 同样用临时数据目录试跑，避免写真实 HOME：
+>
+> ```bash
+> SKILLPORT_DATA_DIR="$(mktemp -d)/skillport" \
+>   cargo run -p skillport-cli --manifest-path src-tauri/Cargo.toml -- import ./some-skill --json
 > ```
 
 ## 15. 打包与发布
@@ -509,6 +556,9 @@ cargo clippy --manifest-path src-tauri/Cargo.toml -- -D warnings
   `cargo` 构建前必须先 `pnpm build`，因为 `tauri::generate_context!()` 在编译期嵌入 `frontendDist`。
 - 发布在 `.github/workflows/release.yml`：push `v*` tag 触发，macOS 出 Universal `.dmg`、Windows 出 `.msi` + NSIS `.exe`，
   产物进草稿 Release。tag 必须与 `src-tauri/tauri.conf.json` 的 `version` 一致；签名/公证 secrets 见 workflow 顶部注释。
+- 同一个 workflow 还构建 `skillport-cli` 并挂到同一个草稿 Release：macOS 为 Universal `tar.gz`（两个架构 lipo 后
+  重签：有 Developer ID 就用它，否则 ad-hoc），Windows 为 x86_64 `zip`。CLI 不随 `.app` 打包，也不参与公证；
+  分发时的签名状态写在 releaseBody 里。
 - 依赖更新由 `.github/dependabot.yml` 每周提 PR（npm、cargo、github-actions）；PR 模板在
   `.github/pull_request_template.md`。
 
