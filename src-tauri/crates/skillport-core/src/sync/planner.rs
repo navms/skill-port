@@ -5,13 +5,13 @@ use std::path::{Path, PathBuf};
 
 use rusqlite::Connection;
 
-use crate::core::error::AppResult;
-use crate::core::hash;
-use crate::core::model::*;
-use crate::core::paths::AppPaths;
-use crate::core::plan::PLAN_TTL;
-use crate::core::util::new_id;
-use crate::core::{paths, repo};
+use crate::error::AppResult;
+use crate::hash;
+use crate::model::*;
+use crate::paths::AppPaths;
+use crate::plan::PLAN_TTL;
+use crate::util::new_id;
+use crate::{paths, repo};
 
 use super::inspect::{inspect_target, Inspection};
 
@@ -120,7 +120,7 @@ pub fn build_plan(
 
     Ok(SyncPlan {
         id: new_id(),
-        created_at: crate::core::util::now_iso(),
+        created_at: crate::util::now_iso(),
         expires_at: expires_at(PLAN_TTL.as_secs()),
         actions,
     })
@@ -242,5 +242,5 @@ fn action(
 fn expires_at(seconds: u64) -> String {
     (time::OffsetDateTime::now_utc() + time::Duration::seconds(seconds as i64))
         .format(&time::format_description::well_known::Rfc3339)
-        .unwrap_or_else(|_| crate::core::util::now_iso())
+        .unwrap_or_else(|_| crate::util::now_iso())
 }

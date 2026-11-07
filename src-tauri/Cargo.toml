@@ -1,6 +1,6 @@
 [package]
 name = "skillport"
-version = "0.1.0"
+version = "0.2.0"
 description = "SkillPort — Agent Skill manager"
 edition = "2021"
 rust-version = "1.80"
@@ -10,22 +10,21 @@ publish = false
 name = "skillport_lib"
 crate-type = ["rlib"]
 
+[workspace]
+members = ["crates/skillport-core", "crates/skillport-cli"]
+resolver = "2"
+
 [build-dependencies]
 tauri-build = { version = "2", features = [] }
 
 [dependencies]
-blake3 = "1"
 rusqlite = { version = "0.40", features = ["bundled"] }
-rusqlite_migration = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-serde_yaml_ng = "0.10"
+skillport-core = { path = "crates/skillport-core" }
 tauri = { version = "2", features = [] }
 tauri-plugin-dialog = "2"
-thiserror = "2"
-time = { version = "0.3", features = ["formatting"] }
-ulid = "1"
-walkdir = "2"
 
 [dev-dependencies]
+serde_yaml_ng = "0.10"
 tempfile = "3"

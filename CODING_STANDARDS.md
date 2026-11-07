@@ -133,7 +133,7 @@ pub enum AppError {
 
 ### 2.5 模块、可见性与文件大小
 
-- **MUST** Rust 单模块 ≤ 400 行；超过就按职责拆（`commands/` 薄封装，`core/` 业务）。
+- **MUST** Rust 单模块 ≤ 400 行；超过就按职责拆（`commands/` 薄封装，`crates/skillport-core/` 业务）。
 - **SHOULD** 默认私有，按需 `pub(crate)`；不要用 `pub use *` 把内部结构泄漏成公开 API。
 - **SHOULD** 一个模块一个主题：`paths` 只做路径与守卫，`sync` 只做 plan/apply/reconcile，`db` 只做连接/迁移/查询。
 - **MUST** 命令层只做参数校验、状态注入、调用 core、错误转换；业务逻辑不写在 `#[tauri::command]` 里。

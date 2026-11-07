@@ -164,11 +164,5 @@ impl From<serde_yaml_ng::Error> for AppError {
     }
 }
 
-impl From<tauri::Error> for AppError {
-    fn from(error: tauri::Error) -> Self {
-        Self::Internal(error.to_string())
-    }
-}
-
 /// 核心层统一返回类型。
 pub type AppResult<T> = Result<T, AppError>;

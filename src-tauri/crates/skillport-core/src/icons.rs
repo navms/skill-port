@@ -14,35 +14,35 @@ use super::paths::{self, AppPaths};
 const DEFAULTS: &[(&str, &str)] = &[
     (
         "claude-code",
-        include_str!("../../../src/assets/targets/claude-code.svg"),
+        include_str!("../../../../src/assets/targets/claude-code.svg"),
     ),
     (
         "codex",
-        include_str!("../../../src/assets/targets/codex.svg"),
+        include_str!("../../../../src/assets/targets/codex.svg"),
     ),
     (
         "cursor",
-        include_str!("../../../src/assets/targets/cursor.svg"),
+        include_str!("../../../../src/assets/targets/cursor.svg"),
     ),
     (
         "deepseek",
-        include_str!("../../../src/assets/targets/deepseek.svg"),
+        include_str!("../../../../src/assets/targets/deepseek.svg"),
     ),
     (
         "gemini-cli",
-        include_str!("../../../src/assets/targets/gemini-cli.svg"),
+        include_str!("../../../../src/assets/targets/gemini-cli.svg"),
     ),
     (
         "opencode",
-        include_str!("../../../src/assets/targets/opencode.svg"),
+        include_str!("../../../../src/assets/targets/opencode.svg"),
     ),
     (
         "qoder",
-        include_str!("../../../src/assets/targets/qoder.svg"),
+        include_str!("../../../../src/assets/targets/qoder.svg"),
     ),
     (
         "workbuddy",
-        include_str!("../../../src/assets/targets/workbuddy.svg"),
+        include_str!("../../../../src/assets/targets/workbuddy.svg"),
     ),
 ];
 

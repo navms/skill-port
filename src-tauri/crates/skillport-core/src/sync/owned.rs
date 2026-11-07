@@ -2,10 +2,10 @@
 
 use std::path::Path;
 
-use crate::core::error::AppResult;
-use crate::core::fsops;
-use crate::core::model::{Skill, Target};
-use crate::core::paths::{self, AppPaths};
+use crate::error::AppResult;
+use crate::fsops;
+use crate::model::{Skill, Target};
+use crate::paths::{self, AppPaths};
 
 /// 一次清理的结果；`removed == false` 表示因归属不明而保留。
 #[derive(Debug, Clone)]
@@ -50,7 +50,7 @@ pub fn remove_distribution(
                 detail: Some("目标条目不存在".to_string()),
             })
         }
-        Err(error) => return Err(crate::core::error::AppError::io_at(&target_path, error)),
+        Err(error) => return Err(crate::error::AppError::io_at(&target_path, error)),
     };
 
     if meta.file_type().is_symlink() {

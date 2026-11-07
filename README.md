@@ -104,6 +104,26 @@ pnpm dev
 
 其余脚本：`pnpm typecheck`、`pnpm lint`、`pnpm test`。
 
+## 命令行导入（给其他 agent）
+
+其他 agent 不必打开界面，也能把技能收进同一个库：
+
+```bash
+cargo install --path src-tauri/crates/skillport-cli
+skillport-cli import ./some-skill --json
+```
+
+也可以直接从 Releases 下载预编译产物：macOS 用 `skillport-cli-<tag>-macos-universal.tar.gz`，
+Windows 用 `skillport-cli-<tag>-windows-x86_64.zip`，解压后把二进制放进 `PATH`。
+
+`import` 接受一个或多个目录：目录本身含 `SKILL.md` 就导入它，否则导入其下所有含 `SKILL.md` 的直接子目录。
+校验规则与界面完全一致——缺 `SKILL.md`、frontmatter、`name` 或 `description` 的目录会被拒绝，不写库。
+`--json` 输出 `{ schema, ok, dataDir, libraryDir, imported, skipped, items }`，
+`items[].errorCode` 说明每个失败项的原因。退出码 `0` 全部成功、`1` 有路径被拒绝、`2` 参数或数据目录错误。
+
+数据目录默认使用桌面端的同一个位置，也可以用 `--data-dir` 或 `SKILLPORT_DATA_DIR` 指定。
+导入只写库和数据库；分发到各个 harness 仍由应用里的同步流程完成。
+
 ## 数据在哪
 
 ```text

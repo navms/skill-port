@@ -4,8 +4,11 @@
 //! → 清理 `.skillport-tmp-*` 残留 → 核对一次状态。
 
 pub mod commands;
-pub mod core;
 pub mod state;
+
+// 业务核心是独立 crate（`skillport-core`），桌面端与 CLI 共用同一套库、DB 与守卫。
+// 重新导出保留 `skillport_lib::core::…` 路径，集成测试与命令层无需改动。
+pub use skillport_core as core;
 
 use std::path::PathBuf;
 

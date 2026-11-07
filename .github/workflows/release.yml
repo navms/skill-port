@@ -93,6 +93,39 @@ jobs:
             printf 'KEYCHAIN_PASSWORD=%s\n' "$KEYCHAIN_PASSWORD"
           } >> "$GITHUB_ENV"
 
+      # CLI 与桌面端共用 skillport-core；先按各架构构建，macOS 再 lipo 成 Universal。
+      - name: Build CLI (macOS universal)
+        if: matrix.platform == 'macos-latest'
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo build --release -p skillport-cli --manifest-path src-tauri/Cargo.toml \
+            --target aarch64-apple-darwin
+          cargo build --release -p skillport-cli --manifest-path src-tauri/Cargo.toml \
+            --target x86_64-apple-darwin
+          mkdir -p dist-cli
+          lipo -create \
+            src-tauri/target/aarch64-apple-darwin/release/skillport-cli \
+            src-tauri/target/x86_64-apple-darwin/release/skillport-cli \
+            -output dist-cli/skillport-cli
+          # lipo 会破坏签名；arm64 至少需要 ad-hoc 签名才能执行。
+          identity="${APPLE_SIGNING_IDENTITY:-}"
+          if [ -n "$identity" ] && security find-identity -v -p codesigning | grep -qF "$identity"; then
+            codesign --force --options runtime --timestamp --sign "$identity" dist-cli/skillport-cli
+          else
+            codesign --force --sign - dist-cli/skillport-cli
+          fi
+          tar -czf "skillport-cli-${GITHUB_REF_NAME}-macos-universal.tar.gz" -C dist-cli skillport-cli
+
+      - name: Build CLI (Windows)
+        if: matrix.platform == 'windows-latest'
+        shell: pwsh
+        run: |
+          cargo build --release -p skillport-cli --target x86_64-pc-windows-msvc --manifest-path src-tauri/Cargo.toml
+          New-Item -ItemType Directory -Force -Path dist-cli | Out-Null
+          Copy-Item "src-tauri\target\x86_64-pc-windows-msvc\release\skillport-cli.exe" "dist-cli\skillport-cli.exe"
+          Compress-Archive -Path "dist-cli\skillport-cli.exe" -DestinationPath "skillport-cli-$($env:GITHUB_REF_NAME)-windows-x86_64.zip" -Force
+
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -102,9 +135,34 @@ jobs:
           releaseBody: |
             - macOS：`.dmg`（Universal，包含 Intel 与 Apple Silicon）
             - Windows：`.msi` 与 NSIS `.exe`
+            - 命令行（其他 agent 用）：
+              - macOS：`skillport-cli-<tag>-macos-universal.tar.gz`
+              - Windows：`skillport-cli-<tag>-windows-x86_64.zip`
 
             安装包由 CI 自动构建；发布前请确认签名与公证状态。
+            CLI 是独立二进制：macOS 上未公证（首次运行可能需在「隐私与安全性」中允许），Windows 上未签名。
           # 先出草稿，确认产物后再手动 Publish。想全自动发布改成 false。
           releaseDraft: true
           prerelease: false
           args: --target ${{ matrix.target }}
+
+      # tauri-action 已创建（或更新）草稿 Release，这里把 CLI 产物挂到同一个 tag 下。
+      - name: Upload CLI to release (macOS)
+        if: matrix.platform == 'macos-latest'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: >-
+          gh release upload "$GITHUB_REF_NAME"
+          "skillport-cli-${GITHUB_REF_NAME}-macos-universal.tar.gz"
+          --clobber --repo "$GITHUB_REPOSITORY"
+
+      - name: Upload CLI to release (Windows)
+        if: matrix.platform == 'windows-latest'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: >-
+          gh release upload "$($env:GITHUB_REF_NAME)"
+          "skillport-cli-$($env:GITHUB_REF_NAME)-windows-x86_64.zip"
+          --clobber --repo "$($env:GITHUB_REPOSITORY)"

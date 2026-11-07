@@ -1,0 +1,18 @@
+[package]
+name = "skillport-cli"
+version = "0.2.0"
+description = "SkillPort 命令行导入工具：把技能目录收进 SkillPort 库，供其他 agent 调用"
+edition = "2021"
+rust-version = "1.80"
+publish = false
+
+[[bin]]
+name = "skillport-cli"
+path = "src/main.rs"
+
+[dependencies]
+serde_json = "1"
+skillport-core = { path = "../skillport-core" }
+
+[dev-dependencies]
+tempfile = "3"
