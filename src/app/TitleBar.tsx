@@ -1,6 +1,7 @@
 import {
   Activity,
   Languages,
+  Monitor,
   Moon,
   PanelLeftClose,
   PanelLeftOpen,
@@ -8,13 +9,25 @@ import {
 } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
+import {
+  DropdownLabel,
+  DropdownMenu,
+  DropdownRadioGroup,
+  DropdownRadioItem,
+} from '@/components/ui/dropdown'
 import { Kbd } from '@/components/ui/kbd'
 import { useI18n } from '@/i18n'
 import { formatRelative } from '@/lib/format'
 import { commandShortcut, hasOverlayTitleBar } from '@/lib/platform'
+import type { ThemeMode } from '@/lib/types'
 import { useUiStore } from '@/lib/uiStore'
 import { cn } from '@/lib/utils'
-import { useResolvedTheme } from './theme'
+
+const THEME_ICON: Record<ThemeMode, typeof Sun> = {
+  light: Sun,
+  dark: Moon,
+  system: Monitor,
+}
 
 const NARROW_NAV =
   'rounded-md px-2.5 py-1.5 text-xs whitespace-nowrap transition-colors text-muted hover:text-ink'
@@ -25,7 +38,7 @@ const ICON_NAV =
 
 export function TitleBar() {
   const { t, language } = useI18n()
-  const resolved = useResolvedTheme()
+  const themeMode = useUiStore((state) => state.themeMode)
   const lastCheckedAt = useUiStore((state) => state.lastCheckedAt)
   const setThemeMode = useUiStore((state) => state.setThemeMode)
   const openPalette = useUiStore((state) => state.openPalette)
@@ -35,6 +48,8 @@ export function TitleBar() {
   const setLanguage = useUiStore((state) => state.setLanguage)
   const toggleLanguage = () =>
     setLanguage(language === 'zh-CN' ? 'en' : 'zh-CN')
+
+  const ThemeIcon = THEME_ICON[themeMode]
 
   return (
     <header
@@ -109,27 +124,43 @@ export function TitleBar() {
           </button>
         </div>
 
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setThemeMode(resolved === 'dark' ? 'light' : 'dark')}
-          aria-label={
-            resolved === 'dark'
-              ? t('titlebar.themeToLight')
-              : t('titlebar.themeToDark')
-          }
-          title={
-            resolved === 'dark'
-              ? t('titlebar.themeToLight')
-              : t('titlebar.themeToDark')
+        <DropdownMenu
+          trigger={
+            <button
+              type="button"
+              aria-label={t('theme.label')}
+              title={t('theme.label')}
+              className={ICON_NAV}
+            >
+              <ThemeIcon size={14} aria-hidden />
+            </button>
           }
         >
-          {resolved === 'dark' ? (
-            <Sun size={14} aria-hidden />
-          ) : (
-            <Moon size={14} aria-hidden />
-          )}
-        </Button>
+          <DropdownLabel>{t('theme.label')}</DropdownLabel>
+          <DropdownRadioGroup
+            value={themeMode}
+            onValueChange={(value) => setThemeMode(value as ThemeMode)}
+          >
+            <DropdownRadioItem
+              value="light"
+              icon={<Sun size={13} aria-hidden />}
+            >
+              {t('theme.light')}
+            </DropdownRadioItem>
+            <DropdownRadioItem
+              value="dark"
+              icon={<Moon size={13} aria-hidden />}
+            >
+              {t('theme.dark')}
+            </DropdownRadioItem>
+            <DropdownRadioItem
+              value="system"
+              icon={<Monitor size={13} aria-hidden />}
+            >
+              {t('theme.system')}
+            </DropdownRadioItem>
+          </DropdownRadioGroup>
+        </DropdownMenu>
 
         <Button
           variant="ghost"
@@ -142,7 +173,14 @@ export function TitleBar() {
           <span className="hidden text-[12px] sm:inline">
             {t('titlebar.command')}
           </span>
-          <Kbd>{commandShortcut}</Kbd>
+          {/*
+            11px text centered in the 20px keycap lands its baseline ~1.5px
+            above the 12px label's. Nudge it down so both words sit on the
+            same line; the keycap itself stays put.
+          */}
+          <Kbd>
+            <span className="translate-y-[1.5px]">{commandShortcut}</span>
+          </Kbd>
         </Button>
       </div>
     </header>

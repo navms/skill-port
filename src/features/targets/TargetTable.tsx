@@ -25,6 +25,7 @@ interface TargetTableProps {
   skills: readonly SkillSummary[]
   pendingId: string | null
   onToggle: (target: Target, enabled: boolean) => void
+  onOpenDir: (target: Target) => void
   onEdit: (target: Target) => void
   onDelete: (target: Target) => void
 }
@@ -37,6 +38,7 @@ export function TargetTable({
   skills,
   pendingId,
   onToggle,
+  onOpenDir,
   onEdit,
   onDelete,
 }: TargetTableProps) {
@@ -140,13 +142,26 @@ export function TargetTable({
                   </div>
                 </td>
 
-                <td className="py-2.5 pr-3 pl-3 align-middle">
-                  <span
-                    title={target.skillsDir}
-                    className="block truncate font-mono text-[11px] text-muted"
+                <td className="relative py-2.5 align-middle">
+                  {/*
+                    The whole cell is the hit target: a path is often wider
+                    than its column, so a text-only link would be awkward to
+                    hit. The dotted rule marks it as a link without adding
+                    an icon that would shift on hover.
+                  */}
+                  <button
+                    type="button"
+                    onClick={() => onOpenDir(target)}
+                    aria-label={t('targets.openDir', {
+                      path: target.skillsDir,
+                    })}
+                    title={t('targets.openDir', { path: target.skillsDir })}
+                    className="group/dir absolute inset-0 flex items-center px-3 text-left font-mono text-[11px] text-muted transition-colors hover:text-accent focus-visible:text-accent"
                   >
-                    {target.skillsDir}
-                  </span>
+                    <span className="min-w-0 truncate underline decoration-line-2 decoration-dotted underline-offset-[3px] transition-colors group-hover/dir:decoration-accent">
+                      {target.skillsDir}
+                    </span>
+                  </button>
                 </td>
 
                 <td className="py-2.5 pr-3 pl-3 align-middle">

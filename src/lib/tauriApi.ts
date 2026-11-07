@@ -96,6 +96,7 @@ export function createTauriApi(): Api {
       call<Target>('target_update', { id, patch }),
     deleteTarget: (id, options: DeleteTargetOptions) =>
       call<void>('target_delete', { id, options }),
+    revealTarget: (id) => call<void>('target_reveal', { id }),
     pickDirectory: (initialDir) =>
       call<string | null>('target_pick_dir', { initialDir }),
     listTargetIcons: () => call<TargetIconAsset[]>('target_icon_list'),
