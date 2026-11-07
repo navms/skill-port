@@ -117,9 +117,8 @@ fn update_moves_install_paths() {
 
     let after = repo::list_installs_for_target(&fixture.conn, &created.id).expect("installs");
     assert_ne!(before[0].target_path, after[0].target_path);
-    assert!(after[0]
-        .target_path
-        .starts_with(&moved.display().to_string()));
+    // 按路径组件比较：Windows 上 `display()` 的分隔符可能与入库时的归一化结果不同。
+    assert!(std::path::Path::new(&after[0].target_path).starts_with(&moved));
 }
 
 #[test]
