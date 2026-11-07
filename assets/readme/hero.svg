@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+     width="1200" height="872" viewBox="0 0 1200 872" role="img"
+     aria-label="SkillPort — one skill library, distributed to every agent harness">
+  <title>SkillPort — 一份技能，分发到每个 harness</title>
+  <defs>
+    <clipPath id="win">
+      <rect x="56" y="296" width="1088" height="540" rx="12" />
+    </clipPath>
+    <radialGradient id="glow" cx="0" cy="0" r="1"
+                    gradientUnits="userSpaceOnUse" gradientTransform="translate(140 30) scale(460)">
+      <stop offset="0" stop-color="#ff5a2a" stop-opacity="0.13" />
+      <stop offset="1" stop-color="#ff5a2a" stop-opacity="0" />
+    </radialGradient>
+    <linearGradient id="fade" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#121211" stop-opacity="0" />
+      <stop offset="1" stop-color="#121211" stop-opacity="0.92" />
+    </linearGradient>
+    <filter id="lift" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="22" stdDeviation="30" flood-color="#000000" flood-opacity="0.55" />
+    </filter>
+    <style>
+      .sans { font-family: 'Helvetica Neue', 'PingFang SC', 'Hiragino Sans GB', 'Noto Sans CJK SC', sans-serif; }
+      .mono { font-family: 'SF Mono', Menlo, 'DejaVu Sans Mono', monospace; }
+    </style>
+  </defs>
+
+  <rect x="0" y="0" width="1200" height="872" rx="18" fill="#121211" />
+  <rect x="0" y="0" width="1200" height="872" rx="18" fill="url(#glow)" />
+  <rect x="0.5" y="0.5" width="1199" height="871" rx="17.5" fill="none"
+        stroke="rgba(255,255,255,0.07)" />
+
+  <!-- brand -->
+  <g transform="translate(56,45) scale(1.4444)" fill="none" stroke="#f0eee8"
+     stroke-width="1.4" stroke-linecap="round">
+    <circle cx="3.2" cy="9" r="1.5" fill="#f0eee8" stroke="none" />
+    <path d="M4.8 9h2.1c2.6 0 2.6-4.2 5.2-4.2M6.9 9c2.6 0 2.6 4.2 5.2 4.2" />
+    <circle cx="14.3" cy="4.8" r="1.4" />
+    <circle cx="14.3" cy="13.2" r="1.4" />
+  </g>
+  <text class="sans" x="92" y="68" font-size="26" font-weight="600"
+        letter-spacing="-0.6" fill="#f0eee8">SkillPort</text>
+  <text class="mono" x="1144" y="67" text-anchor="end" font-size="13"
+        letter-spacing="0.4" fill="#8a887f">macOS · Windows　/　v0.1.0</text>
+  <line x1="56" y1="96" x2="1144" y2="96" stroke="rgba(255,255,255,0.07)" />
+
+  <!-- eyebrow + state legend -->
+  <text class="mono" x="56" y="131" font-size="12.5" letter-spacing="2.2"
+        fill="#ff5a2a">AGENT SKILL MANAGER · LOCAL FIRST</text>
+
+  <g class="sans" font-size="13.5">
+    <circle cx="826" cy="126" r="3.2" fill="#7bd88f" />
+    <text x="840" y="131" fill="#928f86">已链接</text>
+    <circle cx="898.5" cy="126" r="3.2" fill="#7bd88f" />
+    <text x="912.5" y="131" fill="#928f86">副本</text>
+    <circle cx="957.5" cy="126" r="3.2" fill="#e3b341" />
+    <text x="971.5" y="131" fill="#928f86">副本过期</text>
+    <circle cx="1043.5" cy="126" r="3.2" fill="#f06a5e" />
+    <text x="1057.5" y="131" fill="#928f86">冲突</text>
+    <circle cx="1102.5" cy="126" r="3.2" fill="#37362f" />
+    <text x="1116.5" y="131" fill="#928f86">缺失</text>
+  </g>
+
+  <!-- headline -->
+  <text class="sans" x="54" y="194" font-size="42" font-weight="600"
+        letter-spacing="-0.5" fill="#f0eee8">一份技能，分发到每个 harness</text>
+  <text class="sans" x="56" y="234" font-size="18" fill="#928f86">本地优先。技能的权威副本只存在于库目录，</text>
+  <text class="sans" x="56" y="260" font-size="18" fill="#928f86">再链接或拷贝进 Claude Code、Codex、Cursor、Gemini CLI 等 harness。</text>
+
+  <!-- real app capture -->
+  <g filter="url(#lift)">
+    <rect x="56" y="296" width="1088" height="540" rx="12" fill="#171716" />
+  </g>
+  <g clip-path="url(#win)">
+    <image x="56" y="296" width="1088" height="680" preserveAspectRatio="xMidYMin slice"
+           xlink:href="app-detail.png" />
+    <rect x="56" y="776" width="1088" height="60" fill="url(#fade)" />
+  </g>
+  <rect x="56.5" y="296.5" width="1087" height="539" rx="11.5" fill="none"
+        stroke="rgba(255,255,255,0.10)" />
+</svg>

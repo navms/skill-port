@@ -1,0 +1,93 @@
+name: Release
+
+# 打 `v*` tag 时构建并上传安装包。tag 必须与 `src-tauri/tauri.conf.json` 的 version 一致。
+# 需要的仓库 secrets（Settings → Secrets and variables → Actions）：
+#   macOS 签名 / 公证：
+#     APPLE_CERTIFICATE             Developer ID Application 证书（.p12，base64）
+#     APPLE_CERTIFICATE_PASSWORD    证书密码
+#     APPLE_SIGNING_IDENTITY        如 "Developer ID Application: Name (TEAMID)"
+#     APPLE_ID                      Apple ID
+#     APPLE_PASSWORD                App 专用密码
+#     APPLE_TEAM_ID                 Team ID
+#     KEYCHAIN_PASSWORD             临时 keychain 密码（任意随机值）
+#   没有配置这些 secrets 时会产出未签名的构建，macOS 首次打开需右键 → 打开。
+#   Windows 代码签名尚未接入（需要证书与 signtool / Azure Trusted Signing 配置）；
+#   未签名的安装包会触发 SmartScreen 提示。
+
+on:
+  push:
+    tags: ["v*"]
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  publish:
+    name: Build (${{ matrix.platform }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: macos-latest
+            target: universal-apple-darwin
+            rust_targets: aarch64-apple-darwin,x86_64-apple-darwin
+          - platform: windows-latest
+            target: x86_64-pc-windows-msvc
+            rust_targets: x86_64-pc-windows-msvc
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Check tag matches app version
+        shell: bash
+        run: |
+          version="$(node -p "require('./src-tauri/tauri.conf.json').version")"
+          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
+            echo "tag $GITHUB_REF_NAME does not match version $version" >&2
+            exit 1
+          fi
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.rust_targets }}
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri -> target
+          key: ${{ matrix.target }}
+
+      - run: pnpm install --frozen-lockfile
+
+      - uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: SkillPort ${{ github.ref_name }}
+          releaseBody: |
+            - macOS：`.dmg`（Universal，包含 Intel 与 Apple Silicon）
+            - Windows：`.msi` 与 NSIS `.exe`
+
+            安装包由 CI 自动构建；发布前请确认签名与公证状态。
+          # 先出草稿，确认产物后再手动 Publish。想全自动发布改成 false。
+          releaseDraft: true
+          prerelease: false
+          args: --target ${{ matrix.target }}

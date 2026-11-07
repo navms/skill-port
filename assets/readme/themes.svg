@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+     width="880" height="507" viewBox="0 0 880 507" role="img"
+     aria-label="SkillPort 的同一屏在浅色与深色主题下的样子">
+  <title>SkillPort 主题：浅色与深色</title>
+  <defs>
+    <clipPath id="l"><rect x="32" y="56" width="400" height="395" rx="10" /></clipPath>
+    <clipPath id="d"><rect x="448" y="56" width="400" height="395" rx="10" /></clipPath>
+    <style>
+      .sans { font-family: 'Helvetica Neue', 'PingFang SC', 'Hiragino Sans GB', 'Noto Sans CJK SC', sans-serif; }
+      .mono { font-family: 'SF Mono', Menlo, 'DejaVu Sans Mono', monospace; }
+    </style>
+  </defs>
+
+  <rect x="0" y="0" width="880" height="507" rx="16" fill="#121211" />
+  <rect x="0.5" y="0.5" width="879" height="506" rx="15.5" fill="none"
+        stroke="rgba(255,255,255,0.07)" />
+
+  <text class="mono" x="32" y="40" font-size="11" letter-spacing="2" fill="#ff5a2a">LIGHT / DARK</text>
+  <text class="sans" x="848" y="40" text-anchor="end" font-size="12" fill="#8a887f">标题行右上角可切换</text>
+
+  <g clip-path="url(#l)">
+    <image x="32" y="56" width="400" height="395" xlink:href="panel-light.png" />
+  </g>
+  <g clip-path="url(#d)">
+    <image x="448" y="56" width="400" height="395" xlink:href="panel-dark.png" />
+  </g>
+  <rect x="32.5" y="56.5" width="399" height="394" rx="9.5" fill="none"
+        stroke="rgba(255,255,255,0.14)" />
+  <rect x="448.5" y="56.5" width="399" height="394" rx="9.5" fill="none"
+        stroke="rgba(255,255,255,0.10)" />
+
+  <g class="sans" font-size="13">
+    <circle cx="36" cy="475" r="3.2" fill="#c93b09" />
+    <text x="48" y="479" fill="#928f86">浅色</text>
+    <circle cx="452" cy="475" r="3.2" fill="#ff5a2a" />
+    <text x="464" y="479" fill="#928f86">深色（默认）</text>
+  </g>
+</svg>
