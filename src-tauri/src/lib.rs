@@ -66,11 +66,10 @@ fn create_main_window(app: &tauri::App) -> tauri::Result<()> {
     let Some(window_config) = app.config().app.windows.first() else {
         return Ok(());
     };
-    let mut builder = tauri::WebviewWindowBuilder::from_config(app.handle(), window_config)?;
+    let builder = tauri::WebviewWindowBuilder::from_config(app.handle(), window_config)?;
+    // 用 shadowing 而不是 `mut`：非 macOS 上这段不存在，`mut` 会触发 unused_mut。
     #[cfg(target_os = "macos")]
-    {
-        builder = builder.traffic_light_position(tauri::LogicalPosition::new(16.0, 24.0));
-    }
+    let builder = builder.traffic_light_position(tauri::LogicalPosition::new(16.0, 24.0));
     builder.build()?;
     Ok(())
 }
