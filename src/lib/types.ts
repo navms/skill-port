@@ -278,6 +278,7 @@ export interface Api {
   createTarget(input: TargetInput): Promise<Target>
   updateTarget(id: string, patch: TargetPatch): Promise<Target>
   deleteTarget(id: string, options: DeleteTargetOptions): Promise<void>
+  revealTarget(id: string): Promise<void>
   pickDirectory(initialDir?: string): Promise<string | null>
   listTargetIcons(): Promise<TargetIconAsset[]>
   revealIconsDir(): Promise<void>

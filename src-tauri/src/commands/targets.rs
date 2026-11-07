@@ -1,12 +1,14 @@
 //! 目标（harness）命令。
 
+use std::path::PathBuf;
+
 use tauri::{AppHandle, Manager};
 use tauri_plugin_dialog::DialogExt;
 
 use crate::core::error::{AppError, AppResult};
 use crate::core::model::*;
 use crate::core::util::lock;
-use crate::core::{icons, target};
+use crate::core::{icons, repo, target};
 
 use super::{emit, run_blocking, EVENT_LIBRARY_CHANGED};
 
@@ -88,6 +90,29 @@ pub async fn target_delete(
         serde_json::json!({ "schema": 1 }),
     );
     Ok(())
+}
+
+/// 在系统文件管理器中打开目标的技能目录。只读、幂等。
+///
+/// 目录不存在时返回 `NotFound`；不会创建目录，也不修改任何文件。
+#[tauri::command]
+pub async fn target_reveal(app: AppHandle, id: String) -> AppResult<()> {
+    let dir = run_blocking(app.clone(), move |state| {
+        let conn = lock(&state.db)?;
+        let target = repo::get_target(&conn, &id)?;
+        let dir = PathBuf::from(&target.skills_dir);
+        if !dir.is_dir() {
+            return Err(AppError::NotFound(format!(
+                "技能目录不存在：{}",
+                dir.display()
+            )));
+        }
+        Ok(dir)
+    })
+    .await?;
+    tauri::async_runtime::spawn_blocking(move || super::open_path(&dir))
+        .await
+        .map_err(|error| AppError::Internal(format!("后台任务失败：{error}")))?
 }
 
 /// 列出 harness 图标；读取应用数据目录下的 `icons/*.svg`，用户可直接增删。只读、幂等。

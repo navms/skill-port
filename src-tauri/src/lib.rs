@@ -42,6 +42,7 @@ pub fn run() {
             commands::targets::target_create,
             commands::targets::target_update,
             commands::targets::target_delete,
+            commands::targets::target_reveal,
             commands::targets::target_pick_dir,
             commands::targets::target_icon_list,
             commands::targets::target_icon_reveal,

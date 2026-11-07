@@ -40,6 +40,32 @@ where
     let _ = app.emit(event, payload);
 }
 
+/// 在系统文件管理器中打开一个目录（进入目录，而不是在父目录里选中它）。
+pub(crate) fn open_path(path: &Path) -> AppResult<()> {
+    #[cfg(target_os = "macos")]
+    {
+        std::process::Command::new("open")
+            .arg(path)
+            .spawn()
+            .map_err(|error| AppError::io_at(path, error))?;
+    }
+    #[cfg(target_os = "windows")]
+    {
+        std::process::Command::new("explorer")
+            .arg(path)
+            .spawn()
+            .map_err(|error| AppError::io_at(path, error))?;
+    }
+    #[cfg(all(unix, not(target_os = "macos")))]
+    {
+        std::process::Command::new("xdg-open")
+            .arg(path)
+            .spawn()
+            .map_err(|error| AppError::io_at(path, error))?;
+    }
+    Ok(())
+}
+
 /// 在系统文件管理器中定位一个路径（选中它，而不是只打开父目录）。
 pub(crate) fn reveal_path(path: &Path) -> AppResult<()> {
     #[cfg(target_os = "macos")]

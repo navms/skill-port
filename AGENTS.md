@@ -337,6 +337,7 @@ slug 规则：`^[a-z0-9]+(-[a-z0-9]+)*$`，长度 2–63；保留名 `.`、`..`�
 - 危险操作按钮不做默认焦点；冲突面板默认选中「保留现状」。
 - 所有异步操作有 loading / empty / error 三态；错误显示可操作建议，不只显示堆栈。
 - 删除、同步、冲突解决都要有撤销入口（基于备份，撤销期内可恢复）。
+- 目标页的技能目录是链接：整格可点，在系统文件管理器中打开该目录；目录不存在时提示错误，不创建。
 
 ### 10.3 视觉系统
 
@@ -369,7 +370,11 @@ slug 规则：`^[a-z0-9]+(-[a-z0-9]+)*$`，长度 2–63；保留名 `.`、`..`�
   （Claude / Gemini / DeepSeek），`currentColor` 则跟随主题；未知 slug 回退到通用图标。
   新增图标 = 往图标目录放一个 `<slug>.svg`，不需要重新打包。图标查询用
   `refetchOnWindowFocus: 'always'`，窗口重新获得焦点时必然重读，不受 staleTime 限制。
-- 深浅色主题都支持；跟随系统，允许手动覆盖。
+- 主题三态：浅色 / 深色 / 跟随系统，从标题行的主题菜单选择并持久化；跟随系统时监听
+  `prefers-color-scheme` 实时切换。切换用 View Transitions 做整页交叉淡入（`app/theme.ts`），
+  不支持该 API 或 `prefers-reduced-motion` 时直接换色。
+- 桌面应用手感：界面文字默认不可选中（`body { user-select: none }`），输入框、CodeMirror、
+  `pre`/`code` 与 `.select-text` 例外。
 - 视觉方向已定（见 §18），改视觉时以 `src/styles/tokens.css` 的 token 为准，直接在组件里落地；
   不再维护独立的设计稿目录，新的视觉决策直接补进本文件 §18。
 
@@ -421,6 +426,7 @@ target_detect_suggestions()           -> SuggestedTarget[]
 target_create(input { slug, name, skillsDir, linkMode, enabled }) -> Target
 target_update(id, patch)              -> Target
 target_delete(id, { unlink })         -> ()
+target_reveal(id)                     -> (); 在文件管理器中打开目标的技能目录（不存在则 NotFound）
 target_pick_dir(initialDir?)          -> string | null        # dialog
 target_icon_list()                    -> [{ slug, svg }]      # 读 <data_dir>/icons/*.svg
 target_icon_reveal()                  -> (); 在文件管理器中打开图标目录

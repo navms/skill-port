@@ -1,4 +1,5 @@
 import * as DropdownPrimitive from '@radix-ui/react-dropdown-menu'
+import { Check } from 'lucide-react'
 import type { ComponentPropsWithRef, ReactNode } from 'react'
 import { cn } from '@/lib/utils'
 
@@ -76,6 +77,52 @@ export function DropdownLabel({ children }: { children: ReactNode }) {
     <DropdownPrimitive.Label className="px-2 pt-1.5 pb-1 font-mono text-[10px] tracking-[0.12em] text-faint uppercase">
       {children}
     </DropdownPrimitive.Label>
+  )
+}
+
+export function DropdownRadioGroup({
+  value,
+  onValueChange,
+  children,
+}: {
+  value: string
+  onValueChange: (value: string) => void
+  children: ReactNode
+}) {
+  return (
+    <DropdownPrimitive.RadioGroup
+      value={value}
+      onValueChange={onValueChange}
+    >
+      {children}
+    </DropdownPrimitive.RadioGroup>
+  )
+}
+
+export function DropdownRadioItem({
+  value,
+  icon,
+  children,
+}: {
+  value: string
+  icon?: ReactNode
+  children: ReactNode
+}) {
+  return (
+    <DropdownPrimitive.RadioItem
+      value={value}
+      className="flex cursor-default select-none items-center gap-2 rounded-[5px] px-2 py-1.5 text-[12.5px] text-ink-2 outline-none data-[highlighted]:bg-panel-2 data-[highlighted]:text-ink"
+    >
+      {icon ? (
+        <span className="flex size-4 shrink-0 items-center justify-center text-current">
+          {icon}
+        </span>
+      ) : null}
+      <span className="flex-1">{children}</span>
+      <DropdownPrimitive.ItemIndicator className="flex size-4 shrink-0 items-center justify-center text-ok">
+        <Check size={12} aria-hidden />
+      </DropdownPrimitive.ItemIndicator>
+    </DropdownPrimitive.RadioItem>
   )
 }
 

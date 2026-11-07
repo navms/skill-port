@@ -65,6 +65,15 @@ export function TargetsPage() {
     },
   })
 
+  const openDir = useMutation({
+    mutationFn: (target: Target) => api.revealTarget(target.id),
+    onError: (error) => {
+      toast(t('toast.operationFailed', { message: toErrorMessage(error) }), {
+        tone: 'err',
+      })
+    },
+  })
+
   const pendingId = toggle.isPending
     ? (toggle.variables?.target.id ?? null)
     : null
@@ -151,6 +160,7 @@ export function TargetsPage() {
           skills={skills}
           pendingId={pendingId}
           onToggle={(target, value) => toggle.mutate({ target, enabled: value })}
+          onOpenDir={(target) => openDir.mutate(target)}
           onEdit={setEditing}
           onDelete={setDeleting}
         />

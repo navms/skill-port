@@ -426,6 +426,13 @@ export const mockApi: Api = {
     emitLibraryChanged()
   },
 
+  async revealTarget(id: string): Promise<void> {
+    await wait(40)
+    if (!findTarget(id)) {
+      throw new IpcError({ code: 'TargetNotFound', message: 'Target not found.' })
+    }
+  },
+
   async pickDirectory(): Promise<string | null> {
     return null
   },

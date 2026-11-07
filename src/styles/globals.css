@@ -75,9 +75,24 @@
     font-size: 14px;
     line-height: 1.45;
     -webkit-font-smoothing: antialiased;
-    transition:
-      background-color 0.2s ease,
-      color 0.2s ease;
+    /*
+     * Desktop-app feel: chrome text is not selectable by default, so dragging
+     * across a label never leaves stray highlights behind. Fields and content
+     * the user may want to copy opt back in below.
+     */
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  input,
+  textarea,
+  [contenteditable='true'],
+  .cm-editor,
+  pre,
+  code,
+  .select-text {
+    user-select: text;
+    -webkit-user-select: text;
   }
 
   button,
@@ -204,6 +219,18 @@
   animation: sp-toast-in 0.22s ease-out;
 }
 
+/*
+ * Theme switches run through the View Transitions API (see `app/theme.ts`):
+ * the old and new renders are snapshotted and cross-faded, so every surface
+ * fades together instead of repainting in one hard frame. A slightly longer
+ * easing curve than the browser default keeps the dissolve calm.
+ */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 260ms;
+  animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -212,5 +239,10 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
+  }
+
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none !important;
   }
 }
