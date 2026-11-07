@@ -46,7 +46,7 @@ jobs:
       # 只有真的配了证书才导出签名变量；空字符串会让 Tauri 尝试导入一个空的 p12 并失败。
       HAS_APPLE_CERT: ${{ secrets.APPLE_CERTIFICATE != '' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v4
         with:
