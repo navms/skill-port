@@ -62,7 +62,9 @@ fn rejects_library_inside_target_and_vice_versa() {
 
 #[test]
 fn guarded_path_requires_direct_child() {
-    let dir = PathBuf::from("/tmp/skillport-test/skills");
+    // 必须用平台自己的绝对路径：Windows 上 `/tmp/...` 没有盘符，不是绝对路径。
+    let dir = std::env::temp_dir().join("skillport-test").join("skills");
+    assert!(dir.is_absolute(), "测试需要绝对路径");
     let path = paths::guarded_target_path(&dir, "my-skill").expect("路径");
     assert_eq!(path, dir.join("my-skill"));
     assert!(paths::guarded_target_path(&dir, "../escape").is_err());
