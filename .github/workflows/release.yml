@@ -126,7 +126,7 @@ jobs:
           Copy-Item "src-tauri\target\x86_64-pc-windows-msvc\release\skillport-cli.exe" "dist-cli\skillport-cli.exe"
           Compress-Archive -Path "dist-cli\skillport-cli.exe" -DestinationPath "skillport-cli-$($env:GITHUB_REF_NAME)-windows-x86_64.zip" -Force
 
-      - uses: tauri-apps/tauri-action@v0
+      - uses: tauri-apps/tauri-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
